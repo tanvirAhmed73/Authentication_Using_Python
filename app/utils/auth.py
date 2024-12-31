@@ -26,24 +26,29 @@ def register_user(user:UserCreate, db:Session) -> bool:
     return True
 
 
-def login_user(existing_user:User, userData:UserCreate, response: Response) -> bool:
+def login_user(existing_user:User, userData:UserCreate, response: Response) -> dict:
     #verify the password is correct or not
     passwordIsCorrect = verify_password(userData.password, existing_user.password)
     if passwordIsCorrect:
         print("password is correct")
         #if true make access token and refresh token
         access_token = generate_access_token(existing_user.id)
+
+        # set access token in the cookies
+        response.set_cookie(key="access_token", value=access_token, httponly=True)
+
         refresh_token = generate_refresh_token(existing_user.id)
 
+        #set refresh token in the cookies
+        response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
         # Return user data in the response
-        return True
+        return {"message": "Login successful", "username":existing_user.username ,"email":existing_user.email, "is_active":True}
     
     return {
         "message": "Invalid credentials"
     }
 
 
-# def forget_password_user(existing_user:User, userData:dict, db:Session) -> int:
     
 
 
